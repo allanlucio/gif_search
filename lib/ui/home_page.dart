@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gift_search/ui/gif_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:share/share.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -103,24 +104,25 @@ class _HomePageState extends State<HomePage> {
         itemCount: _getCount(snapshot.data["data"]),
         itemBuilder: (context, index) {
           if (_search == null ||
-              _search == "" ||
+              _search.isEmpty ||
               index < snapshot.data["data"].length) {
             return GestureDetector(
-              onLongPress: (){
-                Share.share(snapshot.data["data"][index]["images"]["fixed_height"]["url"]);
-              },
-              onTap: (){
-                Navigator.push(context, 
-                MaterialPageRoute(builder: (context){
-                  return GifPage(snapshot.data["data"][index]);
-                })
-                );
-              },
-              child: Image.network(
-                  snapshot.data["data"][index]["images"]["fixed_height"]["url"],
+                onLongPress: () {
+                  Share.share(snapshot.data["data"][index]["images"]
+                      ["fixed_height"]["url"]);
+                },
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return GifPage(snapshot.data["data"][index]);
+                  }));
+                },
+                child: FadeInImage.memoryNetwork(
+                  placeholder: kTransparentImage,
+                  image: snapshot.data["data"][index]["images"]["fixed_height"]
+                      ["url"],
                   height: 300.0,
-                  fit: BoxFit.cover),
-            );
+                  fit: BoxFit.cover,
+                ));
           } else {
             return Container(
               child: GestureDetector(
