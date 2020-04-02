@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:gift_search/ui/gif_page.dart';
 import 'package:http/http.dart' as http;
+import 'package:share/share.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -105,6 +106,9 @@ class _HomePageState extends State<HomePage> {
               _search == "" ||
               index < snapshot.data["data"].length) {
             return GestureDetector(
+              onLongPress: (){
+                Share.share(snapshot.data["data"][index]["images"]["fixed_height"]["url"]);
+              },
               onTap: (){
                 Navigator.push(context, 
                 MaterialPageRoute(builder: (context){
