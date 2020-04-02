@@ -14,12 +14,12 @@ class _HomePageState extends State<HomePage> {
 
   Future<Map> _getGifs() async {
     http.Response response;
-    if (_search == null) {
+    if (_search == null || _search == "") {
       response = await http.get(
           "https://api.giphy.com/v1/gifs/trending?api_key=6jnNUvLb5UUQoNEwklTMymyjS7uYcHuT&limit=20&rating=G");
     } else {
       response = await http.get(
-          'https://api.giphy.com/v1/gifs/search?api_key=6jnNUvLb5UUQoNEwklTMymyjS7uYcHuT&q=$_search&limit=20&offset=$_offset&rating=G&lang=en');
+          'https://api.giphy.com/v1/gifs/search?api_key=6jnNUvLb5UUQoNEwklTMymyjS7uYcHuT&q=$_search&limit=19&offset=$_offset&rating=G&lang=en');
     }
 
     return json.decode(response.body);
@@ -49,6 +49,12 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: EdgeInsets.all(10.0),
             child: TextField(
+              onSubmitted: (text) {
+                setState(() {
+                  _search = text;
+                  _offset = 0;
+                });
+              },
               decoration: InputDecoration(
                   labelText: "Pesquise aqui",
                   labelStyle: TextStyle(color: Colors.white),
@@ -74,9 +80,10 @@ class _HomePageState extends State<HomePage> {
                       ),
                     );
                   default:
-                    if(snapshot.hasError) return Container();
-                    else return _createGifTable(context, snapshot);
-                    
+                    if (snapshot.hasError)
+                      return Container();
+                    else
+                      return _createGifTable(context, snapshot);
                 }
               },
             ),
@@ -84,18 +91,57 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
-
   }
 
-  Widget _createGifTable(BuildContext context, AsyncSnapshot snapshot){
+  Widget _createGifTable(BuildContext context, AsyncSnapshot snapshot) {
     return GridView.builder(
-      padding: EdgeInsets.all(10.0),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2,crossAxisSpacing: 10.0,mainAxisSpacing: 10.0),
-      itemCount: snapshot.data["data"].length,
-      itemBuilder: (context,index){
-        return GestureDetector(child: Image.network(snapshot.data["data"][index]["images"]["fixed_height"]["url"],
-        height: 300.0, fit: BoxFit.cover),
-        );
-      });
+        padding: EdgeInsets.all(10.0),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, crossAxisSpacing: 10.0, mainAxisSpacing: 10.0),
+        itemCount: _getCount(snapshot.data["data"]),
+        itemBuilder: (context, index) {
+          if (_search == null ||
+              _search == "" ||
+              index < snapshot.data["data"].length) {
+            return GestureDetector(
+              child: Image.network(
+                  snapshot.data["data"][index]["images"]["fixed_height"]["url"],
+                  height: 300.0,
+                  fit: BoxFit.cover),
+            );
+          } else {
+            return Container(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _offset += 19;
+                  });
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.add,
+                      color: Colors.white,
+                      size: 70.0,
+                    ),
+                    Text(
+                      "Carregar Mais...",
+                      style: TextStyle(color: Colors.white, fontSize: 22.0),
+                    )
+                  ],
+                ),
+              ),
+            );
+          }
+        });
+  }
+
+  int _getCount(List data) {
+    if (_search == null || _search == "") {
+      return data.length;
+    } else {
+      return data.length + 1;
+    }
   }
 }
